@@ -31,53 +31,13 @@ open Test_cv_compute_analytic_expr_case16594_packed_cell0_entry_fixture;;
 open Test_cv_compute_analytic_expr_case16594_packed_cell0_plan;;
 open Test_cv_compute_analytic_expr_case16594_packed_object_cell0_call;;
 
-(* The interval packet encodes an outward-rounded outer box: each endpoint is
-   one fixed-scale unit wider than the pre-rounded endpoint used by the
-   packer.  Add that same unit to the ceil-halfwidth so the explicit geometry
-   contract covers the encoded box, not merely the packer's precursor. *)
-let candle_case16594_object_cell0_whole_radii =
-  mk_list
-    (map candle_case16594_cell0_scaled_q
-       ["161518258123"; "161518258123"; "161518258123";
-        "323036516243"; "211308954992"; "323036516243"],
-     `:((num#num)#num)`);;
-
-let candle_case16594_object_cell0_whole_source_correspondence_goal =
-  list_mk_comb
-    (`candle_q_packed_source_correspondence`,
-     [candle_case16594_cell0_source_boxes;
-      candle_case16594_cell0_center_boxes;
-      candle_case16594_cell0_outer_boxes;
-      candle_case16594_object_cell0_whole_radii]);;
-
-let candle_case16594_object_cell0_whole_source_correspondence = prove
-  (candle_case16594_object_cell0_whole_source_correspondence_goal,
-   REWRITE_TAC
-     [candle_q_packed_source_correspondence_def;
-      candle_q_packed_center_contains_source_midpoint_def;
-      candle_q_packed_radii_cover_source_def;
-      candle_q_packed_outer_covers_source_def;
-      candle_case16594_cell0_forall_lt_six;
-      candle_case16594_cell0_forall_lt_length_six;
-      candle_q_box_valid_list_def; candle_q_radius_list_def;
-      candle_q_interval_contains_def; candle_q_le_real;
-      LENGTH; ALL] THEN
-   CONV_TAC (DEPTH_CONV EL_CONV) THEN
-   REWRITE_TAC
-     [candle_q_midpoint_real; candle_q_radius_real;
-      candle_q_real_def; candle_q_den_def; candle_lc_zreal_def;
-      FST; SND] THEN
-   CONV_TAC REAL_RAT_REDUCE_CONV THEN
-   TRY (REWRITE_TAC[GSYM REAL_OF_NUM_SUC] THEN
-        CONV_TAC REAL_RAT_REDUCE_CONV));;
-
 let candle_case16594_object_cell0_whole_outer_correspondence_goal =
   list_mk_comb
     (`candle_q_packed_source_correspondence`,
      [candle_case16594_cell0_outer_boxes;
       candle_case16594_cell0_center_boxes;
       candle_case16594_cell0_outer_boxes;
-      candle_case16594_object_cell0_whole_radii]);;
+      candle_case16594_cell0_radii]);;
 
 let candle_case16594_object_cell0_whole_outer_correspondence = prove
   (candle_case16594_object_cell0_whole_outer_correspondence_goal,
@@ -124,12 +84,12 @@ let candle_case16594_object_cell0_whole_radii_length =
   LENGTH_CONV
     (mk_comb
       (`LENGTH:(((num#num)#num)list)->num`,
-       candle_case16594_object_cell0_whole_radii));;
+       candle_case16594_cell0_radii));;
 
 let candle_case16594_object_cell0_packed_cells =
   mk_list
     ([mk_pair
-       (candle_case16594_object_cell0_whole_radii,
+       (candle_case16594_cell0_radii,
         candle_case16594_cell0_certificates)],
      `:(((num#num)#num)list #
         ((((num#num)#num)#((num#num)#num))list))`);;
@@ -183,7 +143,7 @@ let candle_case16594_object_cell0_whole_logical_call =
          candle_case16594_cell0_outer_boxes);
       mk_comb
         (`candle_cv_q_list`,
-         candle_case16594_object_cell0_whole_radii);
+         candle_case16594_cell0_radii);
       mk_comb
         (`candle_cv_q_packed_object_plan_code_list`,
          candle_case16594_cell0_plan_codes);
@@ -284,7 +244,7 @@ let candle_case16594_object_cell0_input_contract = prove
      candle_case16594_object_cell0_whole_center_length;
      candle_case16594_object_cell0_whole_outer_length;
      candle_case16594_object_cell0_whole_radii_length;
-     candle_case16594_object_cell0_whole_source_correspondence;
+     candle_case16594_cell0_correspondence;
      candle_case16594_object_cell0_whole_outer_correspondence]);;
 
 let _ = print_endline "CANDLE_CASE16594_CELL0_WHOLE_STAGE input_contract";;
@@ -297,7 +257,7 @@ let candle_case16594_object_cell0_whole_conditional_goal =
       (`candle_q_packed_object_source_planned_program_run`,
        [candle_case16594_cell0_center_boxes;
         candle_case16594_cell0_outer_boxes;
-        candle_case16594_object_cell0_whole_radii;
+        candle_case16594_cell0_radii;
         candle_case16594_cell0_plan_codes;
         candle_case16594_cell0_sources;
         candle_case16594_cell0_certificates;
@@ -342,7 +302,7 @@ let candle_case16594_object_cell0_whole_conditional = prove
         [candle_case16594_cell0_source_boxes;
          candle_case16594_cell0_center_boxes;
          candle_case16594_cell0_outer_boxes;
-         candle_case16594_object_cell0_whole_radii;
+         candle_case16594_cell0_radii;
          candle_case16594_cell0_plan_codes;
          candle_case16594_cell0_sources;
          candle_case16594_cell0_certificates]
@@ -352,7 +312,7 @@ let candle_case16594_object_cell0_whole_conditional = prove
          candle_case16594_object_cell0_whole_center_length;
          candle_case16594_object_cell0_whole_outer_length;
          candle_case16594_object_cell0_whole_radii_length;
-         candle_case16594_object_cell0_whole_source_correspondence;
+         candle_case16594_cell0_correspondence;
          candle_case16594_object_cell0_whole_outer_correspondence;
          candle_case16594_cell0_plan;
          ASSUME
@@ -379,7 +339,7 @@ let candle_case16594_object_cell0_whole_conditional = prove
          candle_case16594_cell0_sources;
          candle_case16594_cell0_center_boxes;
          candle_case16594_cell0_outer_boxes;
-         candle_case16594_object_cell0_whole_radii;
+         candle_case16594_cell0_radii;
          candle_case16594_cell0_certificates;
          `Candle_q_packed_object_item
             (Candle_q_packed_object_state domain center_value center_gradient
