@@ -68,6 +68,37 @@ let candle_cv_q_packed_object_whole_jobs_check_def = define
       (candle_cv_q_packed_object_whole_jobs_check
         plan_codes source_instructions packed_cells jobs))`;;
 
+(* Registered Candle equations have variable arguments rather than pattern  *)
+(* arguments.  This proved destructor form is exactly equivalent to the four *)
+(* characteristic equations above and is the form exported to HOL4.          *)
+let candle_cv_q_packed_object_whole_jobs_check_compute = prove
+ (`!plan_codes source_instructions packed_cells jobs.
+     candle_cv_q_packed_object_whole_jobs_check
+       plan_codes source_instructions packed_cells jobs =
+     Cexp_if (Cexp_ispair packed_cells)
+       (Cexp_if (Cexp_ispair jobs)
+         (candle_cv_bool_and
+           (Cexp_eq
+             (candle_cv_q_packed_object_whole_job_check
+               plan_codes source_instructions
+               (Cexp_fst packed_cells) (Cexp_fst jobs))
+             (Cexp_num 1))
+           (candle_cv_q_packed_object_whole_jobs_check
+             plan_codes source_instructions
+             (Cexp_snd packed_cells) (Cexp_snd jobs)))
+         (Cexp_num 0))
+       (Cexp_if (Cexp_ispair jobs)
+         (Cexp_num 0)
+         (candle_cv_bool_and
+           (Cexp_eq packed_cells (Cexp_num 0))
+           (Cexp_eq jobs (Cexp_num 0))))`,
+  REPEAT GEN_TAC THEN
+  STRUCT_CASES_TAC (SPEC `packed_cells:cval` (cases "cval")) THEN
+  STRUCT_CASES_TAC (SPEC `jobs:cval` (cases "cval")) THEN
+  REWRITE_TAC
+    [candle_cv_q_packed_object_whole_jobs_check_def;
+     cexp_if_def;cexp_ispair_def;cexp_fst_def;cexp_snd_def]);;
+
 (* Return both verdicts, rather than collapsing them prematurely.  The       *)
 (* soundness layer can then expose the exact numerical and topology premises *)
 (* and the final handoff can additionally require an empty job remainder and *)
@@ -88,8 +119,8 @@ let candle_cv_q_packed_object_whole_check_def = new_definition
 let candle_cv_q_packed_object_whole_compute_eqs () =
   union
     ([SPEC_ALL candle_cv_q_packed_object_whole_job_check_def;
-      SPEC_ALL candle_cv_q_packed_object_whole_check_def] @
-     CONJUNCTS candle_cv_q_packed_object_whole_jobs_check_def)
+      SPEC_ALL candle_cv_q_packed_object_whole_jobs_check_compute;
+      SPEC_ALL candle_cv_q_packed_object_whole_check_def])
     candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_compute_eqs;;
 
 print_endline
